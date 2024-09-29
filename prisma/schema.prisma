@@ -1,0 +1,161 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+model Roles {
+  id        Int       @id @default(autoincrement())
+  name      String
+  isActive  Boolean   @default(true)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+  user      User[]
+}
+
+model Gender {
+  id              Int               @id @default(autoincrement())
+  name            String            @unique
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+  deletedAt       DateTime?
+  user            User[]
+}
+
+model Country {
+  id             Int       @id @default(autoincrement())
+  name           String    @unique
+  timezoneOffset Int
+  dialCode       String
+  isActive       Boolean   @default(true)
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  deletedAt      DateTime?
+  state          State[]
+}
+
+model State {
+  id        Int       @id @default(autoincrement())
+  name      String
+  countryId Int
+  isActive  Boolean   @default(true)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+  country   Country   @relation(fields: [countryId], references: [id])
+  district  Address[]
+}
+
+model Address {
+  id          Int           @id @default(autoincrement())
+  doorNumber  String
+  streetName  String
+  pinCode     String
+  stateId     Int
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  deletedAt   DateTime?
+  state       State         @relation(fields: [stateId], references: [id])
+  userAddress UserAddress[]
+}
+
+model UserAddress {
+  id        Int       @id @default(autoincrement())
+  addressId Int
+  userId    Int
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+  address   Address   @relation(fields: [addressId], references: [id])
+  user      User      @relation(fields: [userId], references: [id])
+}
+model User {
+  id              Int           @id @default(autoincrement())
+  username        String
+  email           String        @unique
+  mobile          String
+  password        String
+  token           String?
+  roleId          Int
+  genderId        Int
+  isActive        Boolean       @default(true)
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+  deletedAt       DateTime?
+  createdProducts Product[]     @relation("CreatedProducts")
+  userAddresses   UserAddress[]
+  transactions    Transactions[]
+  cart            AddCart[]
+  roles           Roles         @relation(fields: [roleId], references: [id])
+  gender          Gender        @relation(fields: [genderId], references: [id])
+}
+
+model Product {
+  id              Int           @id @default(autoincrement())
+  description     String
+  image           String
+  sellingPrice    Float
+  discountPrice   Float?
+  quantity        Int
+  uom             String         // Unit of Measure (UOM)
+  hsnCode         String         // Harmonized System Nomenclature (HSN Code)
+  createdBy       Int            // The user who created the product
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+  deletedAt       DateTime?
+  isActive        Boolean        @default(true)
+  createdUser     User           @relation("CreatedProducts", fields: [createdBy], references: [id])
+  transactions    Transactions[]
+  cart            AddCart[]
+}
+
+model AddCart{
+  id                Int                 @id @default(autoincrement())
+  userId            Int
+  user              User      @relation(fields: [userId], references: [id])
+  productId         Int
+  product           Product      @relation(fields: [productId], references: [id])
+  isActiveCart      Boolean              @default(false)
+  createdAt         DateTime             @default(now())
+  updatedAt         DateTime             @updatedAt
+  deletedAt         DateTime?
+}
+
+model TransactionType {
+  id                Int                 @id @default(autoincrement())
+  type              String
+  isActive          Boolean              @default(true)
+  createdAt         DateTime             @default(now())
+  updatedAt         DateTime             @updatedAt
+  deletedAt         DateTime?
+  transactions    Transactions[]
+}
+
+model Transactions {
+    id                Int                 @id @default(autoincrement())
+    userId            Int
+    user              User      @relation(fields: [userId], references: [id])
+    productId         Int
+    product           Product      @relation(fields: [productId], references: [id])
+    transId           Int
+    transType         TransactionType      @relation(fields: [transId], references: [id])
+    quantity          Int
+    totalPrice        Float
+    isActive          Boolean              @default(true)
+    createdAt         DateTime             @default(now())
+    updatedAt         DateTime             @updatedAt
+    deletedAt         DateTime?
+}
+
+
+
+
+
+
+
+
+
+
